@@ -70,10 +70,16 @@ markdown_pass1 <- function(text) {
   str_set_all_pos(text, rcode_pos, out, rcode_nodes)
 }
 
+markdown_engine_regexp <- function() {
+  opts <- c("r", names(knitr::knit_engines$get()))
+  paste0("^\\{(", paste(opts, collapse = "|"), ")[, \\}]")
+}
+
 is_markdown_code_node <- function(x) {
-  info <- str_sub(xml_attr(x, "info"), 1, 3)
+  info <- xml_attr(x, "info")
+  regx <- markdown_engine_regexp()
   str_sub(xml_text(x), 1, 2) == "r " ||
-    (!is.na(info) && info %in% c("{r ", "{r}", "{r,"))
+    (!is.na(info) && grepl(regx, info))
 }
 
 parse_md_pos <- function(text) {
